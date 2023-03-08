@@ -1,25 +1,7 @@
-let { format } = require("date-fns");
-let WebSocket = require("ws");
-let { print } = require("unix-print");
-let fs = require("fs");
-var html_to_pdf = require("html-pdf-node");
-
-let options = { format: "A4", base: "file:///home/adam/print" };
-
-function compile(strings) {
-  return function (...vals) {
-    return strings
-      .map(function (s, i) {
-        return `${s}${vals[i] || ""}`;
-      })
-      .join("");
-  };
-}
-
-let template = fs.readFileSync("template.html").toString();
-
-let token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImE5NzcwNDIxLTNmNjUtMTFlZC05ZjU3LTAyNDJhYzJhMDAwNCIsImlhdCI6MTY3ODE0Mjc3Mn0.NlwFF8qc6aEUG5bkbWU8rVDfK0EYTLgEmJ7MvuTyFu8";
+import fs from "fs";
+import WebSocket from "ws";
+import { print } from "unix-print";
+import password from "./password.js";
 
 let initial = 1000;
 let max = 16000;
@@ -31,41 +13,25 @@ function send(type, data) {
   else socket.connect();
 }
 
+let { token } = 
+    await fetch("https://coinos.io/api/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ username: "bob", password })}).then(r => r.json());
 let handle = {
   connected() {
     send("login", token);
   },
 
-  payment({ data }) {
-    let sats = 100000000;
-    data = {
-      date: format(new Date(data.created), "MMM d, yyyy"),
-      time: format(new Date(data.created), "h:mm aaa"),
-      fiat: ((data.amount * data.rate) / sats).toFixed(2),
-      ...data,
-    };
-
-    let content = template;
-    for (let k in data) content = content.replace(`{{${k}}}`, data[k]);
-    html_to_pdf.generatePdf({ content }, options).then(async (pdfBuffer) => {
-      let stream = fs.createWriteStream("output.pdf");
-      stream.once("open", () => {
-        stream.write(pdfBuffer);
-        stream.end();
-      });
-
-      stream.on("finish", () => {
-        console.log("PRINTING");
-        // print("output.pdf").then(console.log);
-      });
-    });
+  async payment({ data }) {
+    let n = `${data.id}.pdf`;
+    let f = await fetch("https://coinos.io/pdf", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ data })}).then(r => r.arrayBuffer());
+    fs.writeFileSync(n, Buffer.from(new Uint8Array(f)));
+    print(n).then(console.log);
   },
 };
 
 let socket = {
   connect() {
     if (s) return;
-    s = new WebSocket("ws://localhost:3119/ws");
+    s = new WebSocket("wss://coinos.io/ws");
     s.addEventListener("open", socket.open);
     s.addEventListener("close", socket.close);
     s.addEventListener("message", socket.message);
