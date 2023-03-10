@@ -1,0 +1,21 @@
+
+
+
+
+************************
+COINOS PAYMENT RECEIVED
+************************
+
+{{date}}
+{{time}}
+
+${{fiat}} + {{fiatTip}}
+{{amount}} + {{tip}} satoshis
+
+https://coinos.io/invoice/{{id}}
+
+************************
+
+
+
+

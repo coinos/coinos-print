@@ -11,8 +11,10 @@
   "license": "ISC",
   "dependencies": {
     "date-fns": "^2.29.3",
+    "fastify": "^4.14.1",
     "html-pdf-node": "^1.0.8",
     "unix-print": "^1.2.0",
     "ws": "^8.12.1"
-  }
+  },
+  "type": "module"
 }
