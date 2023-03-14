@@ -1,30 +1,33 @@
 import fs from "fs";
 import WebSocket from "ws";
 import { print } from "unix-print";
-import password from "./password.js";
+import token from "./token.js";
+
+import { exec } from "child_process";
 
 let initial = 1000;
 let max = 16000;
 let delay = initial;
 let s;
 
+console.log(new Date(), "STARTING");
+
 function send(type, data) {
   if (s.readyState === 1) s.send(JSON.stringify({ type, data }));
   else socket.connect();
 }
 
-let { token } = 
-    await fetch("https://coinos.io/api/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ username: "bob", password })}).then(r => r.json());
 let handle = {
   connected() {
     send("login", token);
   },
 
   async payment({ data }) {
-    let n = `${data.id}.pdf`;
-    let f = await fetch("https://coinos.io/pdf", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ data })}).then(r => r.arrayBuffer());
-    fs.writeFileSync(n, Buffer.from(new Uint8Array(f)));
-    print(n).then(console.log);
+    let n = `${data.id}.txt`;
+    let f = await fetch("https://coinos.io/pdf", { method: "POST", headers: { "content-type": "application/json", "x-timezone": "America/Vancouver" }, body: JSON.stringify({ data })}).then(r => r.text());
+    fs.writeFileSync("printout", f);
+
+    exec('sh /root/coinos-print/print.sh', (err, stdout) => console.log("printing", stdout));
   },
 };
 
@@ -39,18 +42,18 @@ let socket = {
   },
 
   open() {
+      console.log(new Date(), "socket opened");
     delay = initial;
   },
 
   message({ data }) {
     data = JSON.parse(data);
     let { type } = data;
-    console.log(new Date(), type);
     handle[type] && handle[type](data);
   },
 
   close() {
-    console.log(new Date(), "closing");
+    console.log(new Date(), "socket closed");
     s = null;
     setTimeout(() => {
       socket.reconnect();
