@@ -3,14 +3,15 @@ import { format } from "date-fns";
 import WebSocket from "ws";
 import { print } from "unix-print";
 import fs from "fs";
+import { generatePdf } from 'html-pdf-node';
 
 let app = fastify();
 
 let template = fs
-  .readFileSync("/home/adam/coinos-print/template.txt")
+  .readFileSync("/home/adam/coinos-print/template.html")
   .toString();
 
-app.post("/pdf", (req, res) => {
+app.post("/pdf", async (req, res) => {
   try {
     let { data } = req.body;
     if (data.amount < 0) throw new Error("invalid amount");
@@ -30,7 +31,10 @@ app.post("/pdf", (req, res) => {
 
     let content = template;
     for (let k in data) content = content.replace(`{{${k}}}`, data[k]);
-    res.send(content);
+
+    let buffer = await generatePdf({ content }, { format: 'A4' });
+
+    res.send(buffer);
   } catch (e) {
     console.log(e);
     res.code(500).send(e.message);

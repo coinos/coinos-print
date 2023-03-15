@@ -4,6 +4,7 @@ specifiers:
   date-fns: ^2.29.3
   fastify: ^4.14.1
   html-pdf-node: ^1.0.8
+  html-to-pdf: ^0.1.11
   unix-print: ^1.2.0
   ws: ^8.12.1
 
@@ -11,6 +12,7 @@ dependencies:
   date-fns: 2.29.3
   fastify: 4.14.1
   html-pdf-node: 1.0.8
+  html-to-pdf: 0.1.11
   unix-print: 1.2.0
   ws: 8.12.1
 
@@ -712,6 +714,12 @@ packages:
       - utf-8-validate
     dev: false
 
+  /html-to-pdf/0.1.11:
+    resolution: {integrity: sha512-xuDOJp1p1a3dJqJeXAqtYDdfuAMoFQZVEHuXf1kTTDgA9yvVSV5CBmdt0Klq7/RWkPNxlgvyeoJIWi6BJsB5vA==}
+    dependencies:
+      node-uuid: 1.4.8
+    dev: false
+
   /htmlparser2/3.10.1:
     resolution: {integrity: sha512-IgieNijUMbkDovyoKObU1DUhm1iwNYE/fuifEoEHfd1oZKZDaONBSkal7Y01shxsM49R4XaMdGez3WnF9UfiCQ==}
     dependencies:
@@ -982,6 +990,12 @@ packages:
   /node-fetch/2.6.1:
     resolution: {integrity: sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==}
     engines: {node: 4.x || >=6.0.0}
+    dev: false
+
+  /node-uuid/1.4.8:
+    resolution: {integrity: sha512-TkCET/3rr9mUuRp+CpO7qfgT++aAxfDRaalQhwPFzI9BY/2rCDn6OfpZOVggi1AXfTPpfkTrg5f5WQx5G1uLxA==}
+    deprecated: Use uuid module instead
+    hasBin: true
     dev: false
 
   /nth-check/1.0.2:
