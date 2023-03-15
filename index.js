@@ -3,21 +3,56 @@ import { format } from "date-fns";
 import WebSocket from "ws";
 import { print } from "unix-print";
 import fs from "fs";
-import { generatePdf } from 'html-pdf-node';
+import { generatePdf } from "html-pdf-node";
 
 let app = fastify();
 
-let template = fs
-  .readFileSync("/home/adam/coinos-print/template.html")
-  .toString();
+app.post("/text", (req, res) => {
+  let template = fs
+    .readFileSync("/home/adam/coinos-print/template.txt")
+    .toString();
 
-app.post("/pdf", async (req, res) => {
   try {
     let { data } = req.body;
     if (data.amount < 0) throw new Error("invalid amount");
 
-    let timeZone = req.headers['x-timezone'];
-    let date = new Date(new Date(data.created).toLocaleString("en-US", {timeZone}));
+    let timeZone = req.headers["x-timezone"];
+    let date = new Date(
+      new Date(data.created).toLocaleString("en-US", { timeZone })
+    );
+
+    let sats = 100000000;
+    data = {
+      date: format(date, "MMM d, yyyy"),
+      time: format(date, "h:mm aaa"),
+      fiat: ((data.amount * data.rate) / sats).toFixed(2),
+      fiatTip: data.tip ? ((data.tip * data.rate) / sats).toFixed(2) : "0.00",
+      tip: data.tip || 0,
+      ...data,
+    };
+
+    let content = template;
+    for (let k in data) content = content.replace(`{{${k}}}`, data[k]);
+    res.send(content);
+  } catch (e) {
+    console.log(e);
+    res.code(500).send(e.message);
+  }
+});
+
+app.post("/pdf", async (req, res) => {
+  let template = fs
+    .readFileSync("/home/adam/coinos-print/template.html")
+    .toString();
+
+  try {
+    let { data } = req.body;
+    if (data.amount < 0) throw new Error("invalid amount");
+
+    let timeZone = req.headers["x-timezone"];
+    let date = new Date(
+      new Date(data.created).toLocaleString("en-US", { timeZone })
+    );
 
     let sats = 100000000;
     data = {
@@ -32,7 +67,7 @@ app.post("/pdf", async (req, res) => {
     let content = template;
     for (let k in data) content = content.replace(`{{${k}}}`, data[k]);
 
-    let buffer = await generatePdf({ content }, { format: 'A4' });
+    let buffer = await generatePdf({ content }, { format: "A4" });
 
     res.send(buffer);
   } catch (e) {
