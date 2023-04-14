@@ -24,8 +24,12 @@ let handle = {
 
   async payment({ data }) {
     let n = `${data.id}.txt`;
-    let f = await fetch("https://coinos.io/pdf", { method: "POST", headers: { "content-type": "application/json", "x-timezone": "America/Vancouver" }, body: JSON.stringify({ data })}).then(r => r.text());
-    fs.writeFileSync("printout", f);
+    // let f = await fetch("https://coinos.io/pdf", { method: "POST", headers: { "content-type": "application/json", "x-timezone": "America/Vancouver" }, body: JSON.stringify({ data })}).then(r => r.text());
+    // fs.writeFileSync("/root/coinos-print/printout", f);
+
+    let f = await fetch("https://coinos.io/pdf", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ data })}).then(r => r.arrayBuffer());
+    console.log("F", f);
+    fs.writeFileSync("/root/coinos-print/printout.pdf", Buffer.from(new Uint8Array(f)));
 
     exec('sh /root/coinos-print/print.sh', (err, stdout) => console.log("printing", stdout));
   },
